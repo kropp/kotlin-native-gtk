@@ -22,21 +22,25 @@ private fun Element.processNamespace(out: PrintStream) {
 }
 
 private fun Element.processClass(out: PrintStream) {
-  out.print("class " + toName())
+  val className = toName()
+  if (className == "Widget") {
+    out.print("abstract ")
+  }
+  out.print("class " + className)
   val implements = getChildren("implements", introspectionNs).map { it.toName() }.joinToString(", ")
   if (implements.isNotEmpty()) out.print(" : $implements")
   out.println(" {")
+  if (className == "Widget") {
+    out.println("  abstract val widgetPtr: CPointer<Widget>")
+  } else {
+    getChild("constructor", introspectionNs)?.let {
+      out.println("  val widgetPtr = ${it.getAttribute("identifier", cNs).value}(${it.toArgumentsList()})!!")
+    }
+  }
 
   // methods
   for (e in getChildren("method", introspectionNs)) {
-    print("  fun ${e.getAttribute("name").value}(")
-
-    val parameters = e.getChild("parameters", introspectionNs)?.getChildren("parameter", introspectionNs)
-    parameters?.let {
-      print(it.map { it.toName() + ": " + it.toTypename() }.joinToString(", "))
-    }
-
-    print(")")
+    print("  fun ${e.getAttribute("name").value}(${e.toParametersList()})")
 
     val returnValueElement = e.getChild("return-value", introspectionNs)
     val typeName = returnValueElement.toTypename()
@@ -47,9 +51,7 @@ private fun Element.processClass(out: PrintStream) {
       print(" : Array<$returnArrayType>")
     }
     println(" {")
-    print("    return ${e.getAttribute("identifier", cNs).value}(")
-    print(parameters?.map(Element::toName)?.joinToString(", ") ?: "")
-    println(")")
+    println("    return ${e.getAttribute("identifier", cNs).value}(${e.toArgumentsList("widgetPtr.reinterpret()")})")
     println("  }")
   }
 
@@ -58,6 +60,17 @@ private fun Element.processClass(out: PrintStream) {
 
 private fun Element.toName() = getAttribute("name").value
 private fun Element.toTypename() = getChild("type", introspectionNs)?.toName()
+private fun Element.toParametersList(): String = getChild("parameters", introspectionNs)?.getChildren("parameter", introspectionNs)?.let {
+  it.map { it.toName() + ": " + it.toTypename() }.joinToString(", ")
+} ?: ""
+private fun Element.toArgumentsList(argumentsBefore: String = ""): String {
+  return getChild("parameters", introspectionNs)?.
+      getChildren("parameter", introspectionNs)?.
+      map(Element::toName)?.
+      let { mutableListOf(argumentsBefore) + it }?.
+      joinToString(", ") ?: argumentsBefore
+}
+
 
 private fun convertType(name: String) = when(name) {
   "none" -> null
