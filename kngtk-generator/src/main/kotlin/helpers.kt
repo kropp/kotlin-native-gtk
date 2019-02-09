@@ -116,3 +116,9 @@ val TypeName.isWidgetPtr get() = this is ClassName && packageName == LIB && !sim
 val TypeName.igtptr get() = if (this is ClassName && packageName == LIB /*&& this !in enums.values*/) ptr/*.asNullable()*/ else this
 
 fun TypeName.asNullable() = copy(true)
+
+fun TypeName.asOurWidget() = if (isWidgetPtr) {
+    ClassName(NS, (this as ClassName).simpleName.removePrefix("Gtk"))
+} else this
+
+fun TypeName.asBuilder() = LambdaTypeName.get(receiver = this, returnType = UNIT)
