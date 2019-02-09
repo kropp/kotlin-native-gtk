@@ -1,4 +1,5 @@
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.jdom2.Element
 
 fun Element.toName(): String {
@@ -27,7 +28,26 @@ fun Element.shouldGenerateBindingClass(): Boolean {
     return true
 }
 
-private fun String?.toTypeName(): TypeName {
+val Element.parameters get() = getChild("parameters", introspectionNs)?.getChildren("parameter", introspectionNs)?.filter { it.getChild("varargs", introspectionNs) == null } ?: emptyList()
+
+fun String.toInstanceName() = split('_', '-').joinToString("") { it.capitalize() }.let { it.first().toLowerCase() + it.substring(1) }
+
+fun Element.toTypename(): TypeName {
+    val arrayChild = getChild("array", introspectionNs)
+    if (arrayChild != null) {
+        val elementType = arrayChild.toTypename()
+        return LIST.parameterizedBy(elementType)
+    }
+    val child = getChild("type", introspectionNs)
+    val name = child.toName()
+    if (name == "gint") {
+        val candidate = child.getAttribute("type", cNs).value
+        if ("*" !in candidate) return candidate.toTypeName()
+    }
+    return name.toTypeName()
+}
+
+fun String?.toTypeName(): TypeName {
     return when(this) {
         null, "none" -> UNIT
         "any" -> ANY
@@ -61,3 +81,38 @@ private fun String?.toTypeName(): TypeName {
         }
     }
 }
+
+fun TypeName.isSupported(): Boolean {
+    if (this is ParameterizedTypeName) {
+        return this.rawType == LIST && this.typeArguments.first() == STRING
+    }
+    if (this is ClassName) {
+/*
+    if (simpleName == "GtkGLibDestroyNotify") return false
+    if (simpleName == "GtkGLibList") return false
+*/
+        if (simpleName == "GdkPixbufPixbufAnimation") return false
+        if (simpleName == "Gtkgpointer") return false
+        if (simpleName == "Gtkgunichar") return false
+        if (simpleName == "Gtkfile") return false
+        if (simpleName.startsWith("GtkGLib")) return false
+        if (simpleName.startsWith("GLib.")) return false
+        if (simpleName.startsWith("GObject")) return false
+        if (simpleName.contains("GObject")) return false
+        if (simpleName.contains("Atk")) return false
+        if (simpleName.contains("GType")) return false
+        if (simpleName.contains("GdkAtom")) return false
+        if (simpleName.contains("cairo", ignoreCase = true)) return false
+        if (simpleName.contains("pango", ignoreCase = true)) return false
+        if (simpleName.contains("gio", ignoreCase = true)) return false
+        if (simpleName.contains("Func")) return false
+        if (simpleName.contains("va_list")) return false
+    }
+    return true
+}
+
+private val skipInOverload = listOf("GtkTextIter", "GtkTextMark", "GtkTextChildAnchor", "GtkRecentFilterInfo", "GtkFileFilterInfo", "GtkAccelGroup", "GtkTargetList", "GtkTreePath", "GtkCellRenderer", "GtkTreeModel", "GtkTreeIter", "GtkTooltip", "GtkAllocation", "GtkSelectionData", "GFile", "GIcon")
+val TypeName.isWidgetPtr get() = this is ClassName && packageName == LIB && !simpleName.startsWith("Gdk") && simpleName !in skipInOverload /*&& this !in enums.values*/
+val TypeName.igtptr get() = if (this is ClassName && packageName == LIB /*&& this !in enums.values*/) ptr/*.asNullable()*/ else this
+
+fun TypeName.asNullable() = copy(true)

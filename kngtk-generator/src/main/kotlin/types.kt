@@ -1,7 +1,5 @@
-import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.asClassName
 import org.jdom2.Namespace
 
 val introspectionNs = Namespace.getNamespace("http://www.gtk.org/introspection/core/1.0")
@@ -29,3 +27,37 @@ val Signal2 = ClassName(NS, "Signal2")
 val Signal3 = ClassName(NS, "Signal3")
 val Signal4 = ClassName(NS, "Signal4")
 val Dsl = ClassName(NS, "GtkDsl")
+
+fun FileSpec.Builder.convertTypeTo(expr: String, type: TypeName) = when {
+    type == STRING -> {
+        addImport(CINTEROP, "toKString")
+        "$expr?.toKString() ?: \"\""
+    }
+    type == BOOLEAN -> "$expr != 0"
+    (type as? ParameterizedTypeName)?.rawType == LIST -> "$expr.toList()"
+    (type as? ParameterizedTypeName)?.rawType == CPointer -> {
+        addImport(CINTEROP, "reinterpret")
+        "$expr!!.reinterpret()"
+    }
+    else -> expr
+}
+
+fun FileSpec.Builder.convertTypeFrom(expr: String, type: TypeName?) = when {
+    type == BOOLEAN -> {
+        addImport(LIB, "gtk_true", "gtk_false")
+        "if ($expr) gtk_true() else gtk_false()"
+    }
+    (type as? ParameterizedTypeName)?.rawType == LIST -> {
+        addImport(CINTEROP, "memScoped")
+        addImport(CINTEROP, "cstr")
+        addImport(CINTEROP, "ptr")
+        addImport(CINTEROP, "toCValues")
+        "memScoped { ($expr.map { it.cstr.ptr } + listOf(null)).toCValues() }"
+    }
+    (type as? ParameterizedTypeName)?.rawType == CPointer -> {
+        addImport(CINTEROP, "reinterpret")
+        "$expr?.reinterpret()"
+    }
+    (type as? ClassName)?.packageName == NS -> "$expr.widgetPtr?.reinterpret()"
+    else -> expr
+}

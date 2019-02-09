@@ -1,4 +1,3 @@
-import org.jdom2.Element
 import org.jdom2.input.SAXBuilder
 import java.io.File
 
@@ -10,13 +9,12 @@ object Generator {
         val gdkGir = SAXBuilder().build(File(basePath + "Gdk-3.0.gir"))
         val gtkGir = SAXBuilder().build(File(basePath + "Gtk-3.0.gir"))
 
-        gtkGir.rootElement.getChild("namespace", introspectionNs)?.let {
-            it.getChildren("class", introspectionNs)?.forEach {
-                it.processClass()
+        gtkGir.rootElement.getChild("namespace", introspectionNs)?.let { ns ->
+            ns.getChildren("class", introspectionNs)?.forEach {
+                if (it.shouldGenerateBindingClass()) {
+                    it.processClass()
+                }
             }
         }
-    }
-
-    private fun Element.processClass() {
     }
 }
