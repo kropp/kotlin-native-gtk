@@ -1,17 +1,19 @@
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.asClassName
 import org.jdom2.Namespace
 
 val introspectionNs = Namespace.getNamespace("http://www.gtk.org/introspection/core/1.0")
 val cNs = Namespace.getNamespace("http://www.gtk.org/introspection/c/1.0")
 val glibNs = Namespace.getNamespace("http://www.gtk.org/introspection/glib/1.0")
 
-private const val NS = "gtk3"
-private const val LIB = "libgtk3"
+const val NS = "gtk3"
+const val LIB = "libgtk3"
 
-private const val CINTEROP = "kotlinx.cinterop"
+const val CINTEROP = "kotlinx.cinterop"
 
+val STRING = String::class.asClassName()
 
 val LIST = ClassName("kotlin.collections", "List")
 val CPointer = ClassName(CINTEROP, "CPointer")
