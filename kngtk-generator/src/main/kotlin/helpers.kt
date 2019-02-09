@@ -111,7 +111,7 @@ fun TypeName.isSupported(): Boolean {
     return true
 }
 
-private val skipInOverload = listOf("GtkTextIter", "GtkTextMark", "GtkTextChildAnchor", "GtkRecentFilterInfo", "GtkFileFilterInfo", "GtkAccelGroup", "GtkTargetList", "GtkTreePath", "GtkCellRenderer", "GtkTreeModel", "GtkTreeIter", "GtkTooltip", "GtkAllocation", "GtkSelectionData", "GFile", "GIcon")
+val skipInOverload = listOf("GtkTextIter", "GtkTextMark", "GtkTextChildAnchor", "GtkRecentFilterInfo", "GtkFileFilterInfo", "GtkAccelGroup", "GtkTargetList", "GtkTreePath", "GtkCellRenderer", "GtkTreeModel", "GtkTreeIter", "GtkTooltip", "GtkAllocation", "GtkSelectionData", "GFile", "GIcon")
 val TypeName.isWidgetPtr get() = this is ClassName && packageName == LIB && !simpleName.startsWith("Gdk") && simpleName !in skipInOverload /*&& this !in enums.values*/
 val TypeName.igtptr get() = if (this is ClassName && packageName == LIB /*&& this !in enums.values*/) ptr/*.asNullable()*/ else this
 
@@ -122,3 +122,5 @@ fun TypeName.asOurWidget() = if (isWidgetPtr) {
 } else this
 
 fun TypeName.asBuilder() = LambdaTypeName.get(receiver = this, returnType = UNIT)
+
+class PropertyInfo(val name: String, val getter: Element?, val setter: Element?)

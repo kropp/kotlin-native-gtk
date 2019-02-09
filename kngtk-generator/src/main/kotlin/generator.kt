@@ -118,6 +118,74 @@ fun Element.processClass() {
                 }
             }
 
+            val properties = mutableMapOf<String,PropertyInfo>()
+            getChildren("method", introspectionNs).filter {
+                it.getAttribute("throws") == null &&
+                        it.parameters.all { it.getChild("varargs", introspectionNs) == null && it.toTypename().isSupported() } &&
+                        it.getAttribute("deprecated")?.value != "1" &&
+                        it.toName().removePrefix("get_").removePrefix("set_") !in listOf("destroyed", "direction", "screen", "activate", "toggle_size_request") &&
+                        (name != "Menu" || !it.toName().endsWith("_active")) &&
+                        (name != "MenuShell" || !it.toName().endsWith("append"))
+            }.forEach {
+                val n = it.toName()
+                val pCount = it.parameters.size
+                when {
+                    n.startsWith("get_") && pCount == 0 -> {
+                        val trimmed = n.removePrefix("get_")
+                        properties.compute(trimmed) { _, p -> PropertyInfo(trimmed, it, p?.setter)}
+                    }
+                    n.startsWith("set_") && pCount == 1 -> {
+                        val trimmed = n.removePrefix("set_")
+                        properties.compute(trimmed) { _, p -> PropertyInfo(trimmed, p?.getter, it)}
+                    }
+                    else -> {
+                        val returnType = it.getChild("return-value", introspectionNs).toTypename()
+
+                        val parameters = it.parameters
+                        val arguments = parameters.map {
+                            it.toName() to it.toTypename()
+                        }
+
+                        if (returnType.isSupported() && arguments.all { it.second.isSupported() } && parameters.all { it.getAttribute("direction")?.value != "out" }) {
+                            addFunction(n.toInstanceName()) {
+                                returns(returnType.igtptr)
+                                arguments.forEach {
+                                    addParameter(it.first, it.second.igtptr)
+                                }
+
+                                val f = it.getAttribute("identifier", cNs).value
+                                addImport(LIB, f)
+
+                                val call = if (arguments.any()) "$f(self, ${arguments.joinToString(", ") { convertTypeFrom(it.first, it.second) }})" else "$f(self)"
+                                addStatement("return " + convertTypeTo(call, returnType.igtptr))
+
+                                it.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
+                            }
+
+                            if (arguments.any { it.second.isWidgetPtr } && arguments.all {
+                                    val name = (it.second as? ClassName)?.simpleName
+                                    name !in skipInOverload && name?.startsWith("Gdk") != true
+                                }) {
+                                // add overload
+                                addFunction(n.toInstanceName()) {
+                                    returns(returnType.igtptr)
+                                    arguments.forEach {
+                                        addParameter(it.first, it.second.asOurWidget())
+                                    }
+
+                                    val f = it.getAttribute("identifier", cNs).value
+                                    addImport(LIB, f)
+
+                                    val call = if (arguments.any()) "$f(self, ${arguments.joinToString(", ") { convertTypeFrom(it.first, it.second.asOurWidget()) }})" else "$f(self)"
+                                    addStatement("return " + convertTypeTo(call, returnType.igtptr))
+
+                                    it.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             val signals = getChildren("signal", glibNs)
             if (signals.any()) {
