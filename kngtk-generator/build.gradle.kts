@@ -11,4 +11,6 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.squareup", "kotlinpoet", "1.0.1")
+    implementation("org.jdom", "jdom2", "2.0.6")
 }
