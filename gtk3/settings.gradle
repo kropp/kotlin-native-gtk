@@ -1,0 +1,3 @@
+rootProject.name = 'gtk3'
+
+enableFeaturePreview("GRADLE_METADATA")

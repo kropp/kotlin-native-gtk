@@ -1,11 +1,12 @@
 package gtk3
 
 import kotlinx.cinterop.*
+import libgtk3.GConnectFlags
 import libgtk3.g_signal_connect_data
 import libgtk3.g_signal_handler_disconnect
 import libgtk3.gulong
 
-fun <F : CFunction<*>> g_signal_connect(obj: CPointer<*>, actionName: String, action: CPointer<F>, data: libgtk3.gpointer? = null, connect_flags: Int = 0): gulong {
+fun <F : CFunction<*>> g_signal_connect(obj: CPointer<*>, actionName: String, action: CPointer<F>, data: libgtk3.gpointer? = null, connect_flags: GConnectFlags = 0U): gulong {
     return g_signal_connect_data(obj.reinterpret(), actionName, action.reinterpret(), data = data, destroy_data = null, connect_flags = connect_flags)
 }
 
