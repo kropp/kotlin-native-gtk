@@ -12,7 +12,7 @@ object Generator {
         gtkGir.rootElement.getChild("namespace", introspectionNs)?.let { ns ->
             ns.getChildren("class", introspectionNs)?.forEach {
                 if (it.shouldGenerateBindingClass()) {
-                    it.processClass()
+                    it.processClass()?.writeTo(File("../gtk3/src/linuxX64Main/kotlin/gtk3"))
                 }
             }
         }

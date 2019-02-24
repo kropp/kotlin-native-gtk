@@ -23,7 +23,7 @@ fun TypeSpec.Builder.ctr(init: FunSpec.Builder.() -> Unit) {
 }
 
 fun TypeSpec.Builder.addVarProperty(name: String, type: TypeName, init: PropertySpec.Builder.() -> Unit) {
-    addProperty(PropertySpec.builder(name, type).apply(init).build())
+    addProperty(PropertySpec.builder(name, type).mutable(true).apply(init).build())
 }
 
 fun PropertySpec.Builder.getter(init: FunSpec.Builder.() -> Unit) {

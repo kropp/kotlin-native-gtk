@@ -3,14 +3,14 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.jdom2.Element
 import java.io.File
 
-fun Element.processClass() {
+fun Element.processClass(): FileSpec? {
     val name = toName()
     val parent = getAttribute("parent")?.value
 
     val ctrElement = getChild("constructor", introspectionNs)
-    if (ctrElement?.getAttribute("deprecated") != null) return
+    if (ctrElement?.getAttribute("deprecated") != null) return null
     val ctrParams = ctrElement?.parameters
-    if (name != "Widget" && ctrParams?.any { !it.toTypename().isSupported() } == true) return
+    if (name != "Widget" && ctrParams?.any { !it.toTypename().isSupported() } == true) return null
 
     val gtkClassPtr = ClassName(LIB, "Gtk$name").ptr
 
@@ -259,7 +259,7 @@ fun Element.processClass() {
         }
     }
 
-    file.writeTo(File("../gtk/src/main/kotlin/generated"))
+    return file
 }
 
 private fun TypeSpec.Builder.generateSignalHandler(
