@@ -9,10 +9,12 @@ object Generator {
         val gdkGir = SAXBuilder().build(File(basePath + "Gdk-3.0.gir"))
         val gtkGir = SAXBuilder().build(File(basePath + "Gtk-3.0.gir"))
 
+        val enums = allEnums(gdkGir, gtkGir)
+
         gtkGir.rootElement.getChild("namespace", introspectionNs)?.let { ns ->
             ns.getChildren("class", introspectionNs)?.forEach {
                 if (it.shouldGenerateBindingClass()) {
-                    it.processClass()?.writeTo(File("../gtk3/src/linuxX64Main/kotlin/gtk3"))
+                    it.processClass(enums)?.writeTo(File("../gtk3/src/linuxX64Main/kotlin"))
                 }
             }
         }

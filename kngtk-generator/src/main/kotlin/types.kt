@@ -1,5 +1,6 @@
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import org.jdom2.Document
 import org.jdom2.Namespace
 
 val introspectionNs = Namespace.getNamespace("http://www.gtk.org/introspection/core/1.0")
@@ -62,3 +63,9 @@ fun FileSpec.Builder.convertTypeFrom(expr: String, type: TypeName?) = when {
     (type as? ClassName)?.packageName == NS -> "$expr.widgetPtr?.reinterpret()"
     else -> expr
 }
+
+internal fun allEnums(vararg docs: Document) = docs.flatMap {
+    it.rootElement.getChild("namespace", introspectionNs)?.children?.filter { it.name == "enumeration" || it.name == "bitfield" } ?: emptyList()
+}.map {
+    it.getAttribute("name").value to it.getAttribute("type-name", glibNs).value.toTypeName()
+}.toMap()

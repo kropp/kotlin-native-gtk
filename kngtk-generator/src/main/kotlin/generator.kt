@@ -2,7 +2,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.jdom2.Element
 
-fun Element.processClass(): FileSpec? {
+fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
     val name = toName()
     val parent = getAttribute("parent")?.value
 
@@ -39,7 +39,7 @@ fun Element.processClass(): FileSpec? {
                     addImport(CINTEROP, "reinterpret")
                     val call = if (ctrParams!!.any()) {
                         "$ctr(" + ctrParams.joinToString(", ") {
-                            val type = it.toTypename().igtptr
+                            val type = it.toTypename().igtptr(enums)
                             addParameter(it.toName(), type)
                             convertTypeFrom(it.toName(), type)
                         } + ")" + if (name == "ApplicationWindow") "" else "?.reinterpret()"
@@ -53,14 +53,14 @@ fun Element.processClass(): FileSpec? {
                     // DSL
 
                     this@build.addFunction(instanceName) {
-                        val ourWidget = name.toTypeName().asOurWidget()
+                        val ourWidget = name.toTypeName().asOurWidget(enums)
 
                         addModifiers(KModifier.INLINE)
                         receiver(Container)
                         returns(ourWidget)
 
                         val params = ctrParams.map {
-                            addParameter(it.toName(), it.toTypename().igtptr)
+                            addParameter(it.toName(), it.toTypename().igtptr(enums))
                             it.toName()
                         }
                         addParameter(ParameterSpec.builder("init", ourWidget.asBuilder()).defaultValue("{}").build())
@@ -90,7 +90,7 @@ fun Element.processClass(): FileSpec? {
                         val params = ctrElement.parameters
                         primaryConstructor {
                             params.forEach {
-                                addParameter(it.toName(), it.toTypename().igtptr)
+                                addParameter(it.toName(), it.toTypename().igtptr(enums))
                             }
                         }
                         val ctr = ctrElement.getAttribute("identifier", cNs).value
@@ -147,36 +147,36 @@ fun Element.processClass(): FileSpec? {
 
                         if (returnType.isSupported() && arguments.all { it.second.isSupported() } && parameters.all { it.getAttribute("direction")?.value != "out" }) {
                             addFunction(n.toInstanceName()) {
-                                returns(returnType.igtptr)
+                                returns(returnType.igtptr(enums))
                                 arguments.forEach {
-                                    addParameter(it.first, it.second.igtptr)
+                                    addParameter(it.first, it.second.igtptr(enums))
                                 }
 
                                 val f = it.getAttribute("identifier", cNs).value
                                 addImport(LIB, f)
 
                                 val call = if (arguments.any()) "$f(self, ${arguments.joinToString(", ") { convertTypeFrom(it.first, it.second) }})" else "$f(self)"
-                                addStatement("return " + convertTypeTo(call, returnType.igtptr))
+                                addStatement("return " + convertTypeTo(call, returnType.igtptr(enums)))
 
                                 it.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
                             }
 
-                            if (arguments.any { it.second.isWidgetPtr } && arguments.all {
+                            if (arguments.any { it.second.isWidgetPtr(enums) } && arguments.all {
                                     val name = (it.second as? ClassName)?.simpleName
                                     name !in skipInOverload && name?.startsWith("Gdk") != true
                                 }) {
                                 // add overload
                                 addFunction(n.toInstanceName()) {
-                                    returns(returnType.igtptr)
+                                    returns(returnType.igtptr(enums))
                                     arguments.forEach {
-                                        addParameter(it.first, it.second.asOurWidget())
+                                        addParameter(it.first, it.second.asOurWidget(enums))
                                     }
 
                                     val f = it.getAttribute("identifier", cNs).value
                                     addImport(LIB, f)
 
-                                    val call = if (arguments.any()) "$f(self, ${arguments.joinToString(", ") { convertTypeFrom(it.first, it.second.asOurWidget()) }})" else "$f(self)"
-                                    addStatement("return " + convertTypeTo(call, returnType.igtptr))
+                                    val call = if (arguments.any()) "$f(self, ${arguments.joinToString(", ") { convertTypeFrom(it.first, it.second.asOurWidget(enums)) }})" else "$f(self)"
+                                    addStatement("return " + convertTypeTo(call, returnType.igtptr(enums)))
 
                                     it.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
                                 }
@@ -192,7 +192,7 @@ fun Element.processClass(): FileSpec? {
                 addImport(CINTEROP, "asStableRef")
 
                 signals.forEach { signal ->
-                    val (signalName, params, funSpec) = generateSignalHandler(signal, name)
+                    val (signalName, params, funSpec) = generateSignalHandler(signal, name, enums)
 
                     this@build.addFunction(funSpec
                         .addParameter("data", COpaquePointer.asNullable())
@@ -213,7 +213,7 @@ fun Element.processClass(): FileSpec? {
                         val arguments = prop.setter.parameters.map {
                             val n = it.toName()
                             val t = it.toTypename()
-                            addParameter(n, t.igtptr)
+                            addParameter(n, t.igtptr(enums))
                             convertTypeFrom(n, t)
                         }
 
@@ -228,7 +228,7 @@ fun Element.processClass(): FileSpec? {
                 } else {
                     val rawTypeName = prop.getter.getChild("return-value", introspectionNs).toTypename()
                     if (rawTypeName.isSupported()) {
-                        val typeName = rawTypeName.igtptr
+                        val typeName = rawTypeName.igtptr(enums)
                         if (prop.setter != null) {
                             addVarProperty(if (name == "Widget" && prop.name == "window") "gdkWindow" else prop.name.toInstanceName(), typeName) {
                                 getter {
@@ -263,7 +263,8 @@ fun Element.processClass(): FileSpec? {
 
 private fun TypeSpec.Builder.generateSignalHandler(
     signal: Element,
-    name: String
+    name: String,
+    enums: Map<String, TypeName>
 ): Triple<String, List<Element>, FunSpec.Builder> {
     val signalName = ("on-" + signal.toName()).toInstanceName()
     val handler = "${name}_${signalName}_Handler"
@@ -277,18 +278,18 @@ private fun TypeSpec.Builder.generateSignalHandler(
     val signalType = when (params.size) {
         4 -> Signal4.parameterizedBy(
             thisType,
-            params[0].toTypename().igtptr,
-            params[1].toTypename().igtptr,
-            params[2].toTypename().igtptr,
-            params[3].toTypename().igtptr,
+            params[0].toTypename().igtptr(enums),
+            params[1].toTypename().igtptr(enums),
+            params[2].toTypename().igtptr(enums),
+            params[3].toTypename().igtptr(enums),
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr,
-                    params[1].toTypename().igtptr,
-                    params[2].toTypename().igtptr,
-                    params[3].toTypename().igtptr,
+                    params[0].toTypename().igtptr(enums),
+                    params[1].toTypename().igtptr(enums),
+                    params[2].toTypename().igtptr(enums),
+                    params[3].toTypename().igtptr(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -296,16 +297,16 @@ private fun TypeSpec.Builder.generateSignalHandler(
         )
         3 -> Signal3.parameterizedBy(
             thisType,
-            params[0].toTypename().igtptr,
-            params[1].toTypename().igtptr,
-            params[2].toTypename().igtptr,
+            params[0].toTypename().igtptr(enums),
+            params[1].toTypename().igtptr(enums),
+            params[2].toTypename().igtptr(enums),
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr,
-                    params[1].toTypename().igtptr,
-                    params[2].toTypename().igtptr,
+                    params[0].toTypename().igtptr(enums),
+                    params[1].toTypename().igtptr(enums),
+                    params[2].toTypename().igtptr(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -313,14 +314,14 @@ private fun TypeSpec.Builder.generateSignalHandler(
         )
         2 -> Signal2.parameterizedBy(
             thisType,
-            params[0].toTypename().igtptr,
-            params[1].toTypename().igtptr,
+            params[0].toTypename().igtptr(enums),
+            params[1].toTypename().igtptr(enums),
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr,
-                    params[1].toTypename().igtptr,
+                    params[0].toTypename().igtptr(enums),
+                    params[1].toTypename().igtptr(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -328,12 +329,12 @@ private fun TypeSpec.Builder.generateSignalHandler(
         )
         1 -> Signal1.parameterizedBy(
             thisType,
-            params[0].toTypename().igtptr,
+            params[0].toTypename().igtptr(enums),
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr,
+                    params[0].toTypename().igtptr(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -367,7 +368,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
         .addParameter("sender", CPointer.parameterizedBy(wCPointed).asNullable())
 
     params.forEach { param ->
-        funSpec.addParameter(param.toName(), param.toTypename().igtptr)
+        funSpec.addParameter(param.toName(), param.toTypename().igtptr(enums))
     }
     return Triple(signalName, params, funSpec)
 }

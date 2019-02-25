@@ -4,19 +4,19 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 class GeneratorTest {
-    @Test
-    fun properties() = doTest("properties")
+    @Test fun properties() = doTest("properties")
+    @Test fun enumparam() = doTest("enumparam")
 
     private val testDataPath = "testData/generator"
 
     private fun doTest(name: String) {
         val actual = StringBuilder()
-        SAXBuilder().build(File("$testDataPath/$name.gir")).rootElement.getChild("namespace", introspectionNs)?.let { ns ->
+        val document = SAXBuilder().build(File("$testDataPath/$name.gir"))
+        document.rootElement.getChild("namespace", introspectionNs)?.let { ns ->
             ns.getChildren("class", introspectionNs)?.forEach {
-                it.processClass()?.writeTo(actual)
+                it.processClass(allEnums(document))?.writeTo(actual)
             }
         }
-//        assertThat(actual.toString(), IsEqual(File("$testDataPath/$name.kt").readText()))
         assertEquals(File("$testDataPath/$name.kt").readText(), actual.toString())
     }
 }

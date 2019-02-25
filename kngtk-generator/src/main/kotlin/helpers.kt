@@ -47,6 +47,10 @@ fun Element.toTypename(): TypeName {
     return name.toTypeName()
 }
 
+val UINT = ClassName("kotlin", "UInt")
+val USHORT = ClassName("kotlin", "UShort")
+val ULONG = ClassName("kotlin", "ULong")
+
 fun String?.toTypeName(): TypeName {
     return when(this) {
         null, "none" -> UNIT
@@ -60,9 +64,9 @@ fun String?.toTypeName(): TypeName {
         "gint" -> INT
         "gint16" -> SHORT
         "gint32" -> INT
-        "guint" -> INT
-        "guint16" -> SHORT
-        "guint32" -> INT
+        "guint" -> UINT
+        "guint16" -> USHORT
+        "guint32" -> UINT
         else -> {
 /*
             if (this in enums) {
@@ -112,12 +116,12 @@ fun TypeName.isSupported(): Boolean {
 }
 
 val skipInOverload = listOf("GtkTextIter", "GtkTextMark", "GtkTextChildAnchor", "GtkRecentFilterInfo", "GtkFileFilterInfo", "GtkAccelGroup", "GtkTargetList", "GtkTreePath", "GtkCellRenderer", "GtkTreeModel", "GtkTreeIter", "GtkTooltip", "GtkAllocation", "GtkSelectionData", "GFile", "GIcon")
-val TypeName.isWidgetPtr get() = this is ClassName && packageName == LIB && !simpleName.startsWith("Gdk") && simpleName !in skipInOverload /*&& this !in enums.values*/
-val TypeName.igtptr get() = if (this is ClassName && packageName == LIB /*&& this !in enums.values*/) ptr/*.asNullable()*/ else this
+fun TypeName.isWidgetPtr(enums: Map<String, TypeName>) = this is ClassName && packageName == LIB && !simpleName.startsWith("Gdk") && simpleName !in skipInOverload && this !in enums.values
+fun TypeName.igtptr(enums: Map<String, TypeName>) = if (this is ClassName && packageName == LIB && this !in enums.values) ptr else this
 
 fun TypeName.asNullable() = copy(true)
 
-fun TypeName.asOurWidget() = if (isWidgetPtr) {
+fun TypeName.asOurWidget(enums: Map<String, TypeName>) = if (isWidgetPtr(enums)) {
     ClassName(NS, (this as ClassName).simpleName.removePrefix("Gtk"))
 } else this
 

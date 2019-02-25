@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<repository version="1.2"
+            xmlns="http://www.gtk.org/introspection/core/1.0"
+            xmlns:c="http://www.gtk.org/introspection/c/1.0"
+            xmlns:glib="http://www.gtk.org/introspection/glib/1.0">
+  <namespace name="Gtk"
+             version="3.0"
+             shared-library="libgtk-3.so.0,libgdk-3.so.0"
+             c:identifier-prefixes="Gtk"
+             c:symbol-prefixes="gtk">
+      <enumeration name="Orientation"
+                   glib:type-name="GtkOrientation"
+                   glib:get-type="gtk_orientation_get_type"
+                   c:type="GtkOrientation">
+          <doc xml:space="preserve">Represents the orientation of widgets and other objects which can be switched
+between horizontal and vertical orientation on the fly, like #GtkToolbar or
+#GtkGesturePan.</doc>
+          <member name="horizontal"
+                  value="0"
+                  c:identifier="GTK_ORIENTATION_HORIZONTAL"
+                  glib:nick="horizontal">
+              <doc xml:space="preserve">The element is in horizontal orientation.</doc>
+          </member>
+          <member name="vertical"
+                  value="1"
+                  c:identifier="GTK_ORIENTATION_VERTICAL"
+                  glib:nick="vertical">
+              <doc xml:space="preserve">The element is in vertical orientation.</doc>
+          </member>
+      </enumeration>
+      <class name="Scrollbar"
+             c:symbol-prefix="scrollbar"
+             c:type="GtkScrollbar"
+             parent="Range"
+             glib:type-name="GtkScrollbar"
+             glib:get-type="gtk_scrollbar_get_type"
+             glib:type-struct="ScrollbarClass">
+          <implements name="Atk.ImplementorIface"/>
+          <implements name="Buildable"/>
+          <implements name="Orientable"/>
+          <constructor name="new" c:identifier="gtk_scrollbar_new" version="3.0">
+              <doc xml:space="preserve">Creates a new scrollbar with the given orientation.</doc>
+              <return-value transfer-ownership="none">
+                  <doc xml:space="preserve">the new #GtkScrollbar.</doc>
+                  <type name="Widget" c:type="GtkWidget*"/>
+              </return-value>
+              <parameters>
+                  <parameter name="orientation" transfer-ownership="none">
+                      <doc xml:space="preserve">the scrollbar’s orientation.</doc>
+                      <type name="Orientation" c:type="GtkOrientation"/>
+                  </parameter>
+                  <parameter name="adjustment"
+                             transfer-ownership="none"
+                             nullable="1"
+                             allow-none="1">
+                      <doc xml:space="preserve">the #GtkAdjustment to use, or %NULL to create a new adjustment.</doc>
+                      <type name="Adjustment" c:type="GtkAdjustment*"/>
+                  </parameter>
+              </parameters>
+          </constructor>
+          <field name="range">
+              <type name="Range" c:type="GtkRange"/>
+          </field>
+      </class>
+  </namespace>
+</repository>
