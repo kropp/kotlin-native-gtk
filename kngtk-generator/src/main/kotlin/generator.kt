@@ -1,7 +1,6 @@
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.jdom2.Element
-import java.io.File
 
 fun Element.processClass(): FileSpec? {
     val name = toName()
@@ -273,7 +272,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
 
     // Signal2<PlacesSidebar, CPointer<libgtk3.GFile>?, GtkPlacesOpenFlags, CFunction<(CPointer<*>?, CPointer<GFile>?, GtkPlacesOpenFlags, COpaquePointer?) -> Unit>>
     val thisType = ClassName(NS, name)
-    val wANY = WildcardTypeName.consumerOf(ANY)
+    val wCPointed = WildcardTypeName.consumerOf(CPointed)
 
     val signalType = when (params.size) {
         4 -> Signal4.parameterizedBy(
@@ -285,7 +284,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
-                    CPointer.parameterizedBy(wANY).asNullable(),
+                    CPointer.parameterizedBy(wCPointed).asNullable(),
                     params[0].toTypename().igtptr,
                     params[1].toTypename().igtptr,
                     params[2].toTypename().igtptr,
@@ -303,7 +302,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
-                    CPointer.parameterizedBy(wANY).asNullable(),
+                    CPointer.parameterizedBy(wCPointed).asNullable(),
                     params[0].toTypename().igtptr,
                     params[1].toTypename().igtptr,
                     params[2].toTypename().igtptr,
@@ -319,7 +318,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
-                    CPointer.parameterizedBy(wANY).asNullable(),
+                    CPointer.parameterizedBy(wCPointed).asNullable(),
                     params[0].toTypename().igtptr,
                     params[1].toTypename().igtptr,
                     COpaquePointer.asNullable(),
@@ -333,7 +332,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
-                    CPointer.parameterizedBy(wANY).asNullable(),
+                    CPointer.parameterizedBy(wCPointed).asNullable(),
                     params[0].toTypename().igtptr,
                     COpaquePointer.asNullable(),
                     returnType = UNIT
@@ -345,7 +344,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
                     null,
-                    CPointer.parameterizedBy(wANY).asNullable(),
+                    CPointer.parameterizedBy(wCPointed).asNullable(),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -365,7 +364,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
 
     val funSpec = FunSpec.builder(handler)
         .addModifiers(KModifier.PRIVATE)
-        .addParameter("sender", CPointer.parameterizedBy(wANY).asNullable())
+        .addParameter("sender", CPointer.parameterizedBy(wCPointed).asNullable())
 
     params.forEach { param ->
         funSpec.addParameter(param.toName(), param.toTypename().igtptr)

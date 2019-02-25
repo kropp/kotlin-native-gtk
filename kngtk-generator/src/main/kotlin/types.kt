@@ -15,6 +15,7 @@ val STRING = String::class.asClassName()
 
 val LIST = ClassName("kotlin.collections", "List")
 val CPointer = ClassName(CINTEROP, "CPointer")
+val CPointed = ClassName(CINTEROP, "CPointed")
 val COpaquePointer = ClassName(CINTEROP, "COpaquePointer")
 val CFunction = ClassName(CINTEROP, "CFunction")
 val TypeName.ptr get() = CPointer.parameterizedBy(this)
