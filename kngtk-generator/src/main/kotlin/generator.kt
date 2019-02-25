@@ -196,7 +196,7 @@ fun Element.processClass(): FileSpec? {
 
                     this@build.addFunction(funSpec
                         .addParameter("data", COpaquePointer.asNullable())
-                        .addStatement("data?.asStableRef<$name>()?.get()?.$signalName?.invoke(${params.joinToString { convertTypeFrom(it.toName(), it.toTypename()) }})")
+                        .addStatement("data?.asStableRef<$name>()?.get()?.$signalName?.emit(${params.joinToString { convertTypeFrom(it.toName(), it.toTypename()) }})")
                         .build())
                 }
             }

@@ -24,7 +24,7 @@ class Signal<T : Any, F : CFunction<*>>(widgetPtr: CPointer<*>, private val obj:
         handlers -= handler
     }
 
-    fun fire() {
+    fun emit() {
         for (handler in handlers) {
             try {
                 obj.handler()
@@ -40,14 +40,14 @@ class Signal1<T : Any, T1, F : CFunction<*>>(widgetPtr: CPointer<*>, private val
         g_signal_connect(widgetPtr, name, realHandler, StableRef.create(obj).asCPointer())
     }
 
-    operator fun plusAssign(handler: SignalHandler1<T, T1>) {
+    operator fun invoke(handler: SignalHandler1<T, T1>) {
         handlers += handler
     }
     operator fun minusAssign(handler: SignalHandler1<T, T1>) {
         handlers -= handler
     }
 
-    operator fun invoke(p1: T1) {
+    fun emit(p1: T1) {
         for (handler in handlers) {
             try {
                 obj.handler(p1)
@@ -63,14 +63,14 @@ class Signal2<T : Any, T1, T2, F : CFunction<*>>(widgetPtr: CPointer<*>, private
         g_signal_connect(widgetPtr, name, realHandler, StableRef.create(obj).asCPointer())
     }
 
-    operator fun plusAssign(handler: SignalHandler2<T, T1, T2>) {
+    operator fun invoke(handler: SignalHandler2<T, T1, T2>) {
         handlers += handler
     }
     operator fun minusAssign(handler: SignalHandler2<T, T1, T2>) {
         handlers -= handler
     }
 
-    operator fun invoke(p1: T1, p2: T2) {
+    fun emit(p1: T1, p2: T2) {
         for (handler in handlers) {
             try {
                 obj.handler(p1, p2)
@@ -86,14 +86,14 @@ class Signal3<T : Any, T1, T2, T3, F : CFunction<*>>(widgetPtr: CPointer<*>, pri
         g_signal_connect(widgetPtr, name, realHandler, StableRef.create(obj).asCPointer())
     }
 
-    operator fun plusAssign(handler: SignalHandler3<T, T1, T2, T3>) {
+    operator fun invoke(handler: SignalHandler3<T, T1, T2, T3>) {
         handlers += handler
     }
     operator fun minusAssign(handler: SignalHandler3<T, T1, T2, T3>) {
         handlers -= handler
     }
 
-    operator fun invoke(p1: T1, p2: T2, p3: T3) {
+    fun emit(p1: T1, p2: T2, p3: T3) {
         for (handler in handlers) {
             try {
                 obj.handler(p1, p2, p3)
@@ -109,14 +109,14 @@ class Signal4<T : Any, T1, T2, T3, T4, F : CFunction<*>>(widgetPtr: CPointer<*>,
         g_signal_connect(widgetPtr, name, realHandler, StableRef.create(obj).asCPointer())
     }
 
-    operator fun plusAssign(handler: SignalHandler4<T, T1, T2, T3, T4>) {
+    operator fun invoke(handler: SignalHandler4<T, T1, T2, T3, T4>) {
         handlers += handler
     }
     operator fun minusAssign(handler: SignalHandler4<T, T1, T2, T3, T4>) {
         handlers -= handler
     }
 
-    operator fun invoke(p1: T1, p2: T2, p3: T3, p4: T4) {
+    fun emit(p1: T1, p2: T2, p3: T3, p4: T4) {
         for (handler in handlers) {
             try {
                 obj.handler(p1, p2, p3, p4)
