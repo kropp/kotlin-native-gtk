@@ -65,7 +65,7 @@ fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
                         }
                         addParameter(ParameterSpec.builder("init", ourWidget.asBuilder()).defaultValue("{}").build())
 
-                        addStatement("return $name(${params.joinToString(", ")}).apply { init(); this@$instanceName.add(this) }")
+                        addStatement("return $name(${params.joinToString(", ")}).apply·{·init(); this@$instanceName.add(this) }")
                     }
                 }
 
@@ -358,7 +358,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
             signalName,
             signalType
         ).delegate(
-            "lazy { %T(widgetPtr!!, this, \"${signal.toName()}\", staticCFunction(::$handler)) }",
+            "lazy·{·%T(widgetPtr!!, this, \"${signal.toName()}\", staticCFunction(::$handler)) }",
             signalType
         ).build()
     )

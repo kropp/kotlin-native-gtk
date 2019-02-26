@@ -35,7 +35,7 @@ fun FileSpec.Builder.convertTypeTo(expr: String, type: TypeName) = when {
         addImport(CINTEROP, "toKString")
         "$expr?.toKString() ?: \"\""
     }
-    type == BOOLEAN -> "$expr != 0"
+    type == BOOLEAN -> "$expr·!=·0"
     (type as? ParameterizedTypeName)?.rawType == LIST -> "$expr.toList()"
     (type as? ParameterizedTypeName)?.rawType == CPointer -> {
         addImport(CINTEROP, "reinterpret")
@@ -47,7 +47,7 @@ fun FileSpec.Builder.convertTypeTo(expr: String, type: TypeName) = when {
 fun FileSpec.Builder.convertTypeFrom(expr: String, type: TypeName?, convertBoolean: Boolean = true) = when {
     type == BOOLEAN && convertBoolean -> {
         addImport(LIB, "gtk_true", "gtk_false")
-        "if ($expr) gtk_true() else gtk_false()"
+        "if·($expr)·gtk_true()·else·gtk_false()"
     }
     (type as? ParameterizedTypeName)?.rawType == LIST -> {
         addImport(CINTEROP, "memScoped")
