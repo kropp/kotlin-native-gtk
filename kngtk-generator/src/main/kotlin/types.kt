@@ -44,8 +44,8 @@ fun FileSpec.Builder.convertTypeTo(expr: String, type: TypeName) = when {
     else -> expr
 }
 
-fun FileSpec.Builder.convertTypeFrom(expr: String, type: TypeName?) = when {
-    type == BOOLEAN -> {
+fun FileSpec.Builder.convertTypeFrom(expr: String, type: TypeName?, convertBoolean: Boolean = true) = when {
+    type == BOOLEAN && convertBoolean -> {
         addImport(LIB, "gtk_true", "gtk_false")
         "if ($expr) gtk_true() else gtk_false()"
     }

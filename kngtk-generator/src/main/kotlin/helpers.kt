@@ -2,9 +2,11 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.jdom2.Element
 
-fun Element.toName(): String {
-    val result = getAttribute("name").value
-    return if (result == "object") "`$result`" else result
+fun Element.toName(): String = getAttribute("name").value
+
+fun String.escaped(): String = when(this) {
+    "object" -> "`object`"
+    else -> this
 }
 
 fun Element.shouldGenerateBindingClass(): Boolean {
