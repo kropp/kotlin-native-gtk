@@ -16,6 +16,8 @@ val STRING = String::class.asClassName()
 
 val LIST = ClassName("kotlin.collections", "List")
 val CPointer = ClassName(CINTEROP, "CPointer")
+val ByteVar = ClassName(CINTEROP, "ByteVar")
+val ByteVarPtr = CPointer.parameterizedBy(ByteVar)
 val CPointed = ClassName(CINTEROP, "CPointed")
 val COpaquePointer = ClassName(CINTEROP, "COpaquePointer")
 val CFunction = ClassName(CINTEROP, "CFunction")
@@ -50,6 +52,10 @@ fun FileSpec.Builder.convertTypeFrom(expr: String, type: TypeName?, convertBoole
     type == BOOLEAN && convertBoolean -> {
         addImport(LIB, "gtk_true", "gtk_false")
         "if·($expr)·gtk_true()·else·gtk_false()"
+    }
+    type == ByteVarPtr -> {
+        addImport(CINTEROP, "toKString")
+        "$expr.toKString()"
     }
     (type as? ParameterizedTypeName)?.rawType == LIST -> {
         addImport(CINTEROP, "memScoped")

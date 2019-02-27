@@ -191,13 +191,13 @@ fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
                 addImport(CINTEROP, "staticCFunction")
                 addImport(CINTEROP, "asStableRef")
 
-                signals.filter { it.parameters.all { it.toTypename().isSupported() } }
+                signals.filter { it.parameters.all { it.toTypename().isSupported() && it.toTypename() !in enums.values   } }
                     .forEach { signal ->
                     val (signalName, params, funSpec) = generateSignalHandler(signal, name, enums)
 
                     this@build.addFunction(funSpec
                         .addParameter("_data", COpaquePointer.asNullable())
-                        .addStatement("_data?.asStableRef<$name>()?.get()?.$signalName?.emit(${params.joinToString { convertTypeFrom(it.toName().escaped(), it.toTypename(), false) }})")
+                        .addStatement("_data?.asStableRef<$name>()?.get()?.$signalName?.emit(${params.joinToString { convertTypeFrom(it.toName().escaped(), it.toTypename().ptrInSignal(enums), false) }})")
                         .build())
                 }
             }
@@ -289,12 +289,12 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr(enums),
-                    params[1].toTypename().igtptr(enums),
-                    params[2].toTypename().igtptr(enums),
-                    params[3].toTypename().igtptr(enums),
-                    params[4].toTypename().igtptr(enums),
-                    params[5].toTypename().igtptr(enums),
+                    params[0].toTypename().ptrInSignal(enums),
+                    params[1].toTypename().ptrInSignal(enums),
+                    params[2].toTypename().ptrInSignal(enums),
+                    params[3].toTypename().ptrInSignal(enums),
+                    params[4].toTypename().ptrInSignal(enums),
+                    params[5].toTypename().ptrInSignal(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -311,11 +311,11 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr(enums),
-                    params[1].toTypename().igtptr(enums),
-                    params[2].toTypename().igtptr(enums),
-                    params[3].toTypename().igtptr(enums),
-                    params[4].toTypename().igtptr(enums),
+                    params[0].toTypename().ptrInSignal(enums),
+                    params[1].toTypename().ptrInSignal(enums),
+                    params[2].toTypename().ptrInSignal(enums),
+                    params[3].toTypename().ptrInSignal(enums),
+                    params[4].toTypename().ptrInSignal(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -331,10 +331,10 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr(enums),
-                    params[1].toTypename().igtptr(enums),
-                    params[2].toTypename().igtptr(enums),
-                    params[3].toTypename().igtptr(enums),
+                    params[0].toTypename().ptrInSignal(enums),
+                    params[1].toTypename().ptrInSignal(enums),
+                    params[2].toTypename().ptrInSignal(enums),
+                    params[3].toTypename().ptrInSignal(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -349,9 +349,9 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr(enums),
-                    params[1].toTypename().igtptr(enums),
-                    params[2].toTypename().igtptr(enums),
+                    params[0].toTypename().ptrInSignal(enums),
+                    params[1].toTypename().ptrInSignal(enums),
+                    params[2].toTypename().ptrInSignal(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -365,8 +365,8 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr(enums),
-                    params[1].toTypename().igtptr(enums),
+                    params[0].toTypename().ptrInSignal(enums),
+                    params[1].toTypename().ptrInSignal(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -379,7 +379,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 LambdaTypeName.get(
                     null,
                     CPointer.parameterizedBy(wCPointed).asNullable(),
-                    params[0].toTypename().igtptr(enums),
+                    params[0].toTypename().ptrInSignal(enums),
                     COpaquePointer.asNullable(),
                     returnType = UNIT
                 )
@@ -414,7 +414,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
         .addParameter("sender", CPointer.parameterizedBy(wCPointed).asNullable())
 
     params.forEach { param ->
-        funSpec.addParameter(param.toName(), param.toTypename().igtptr(enums))
+        funSpec.addParameter(param.toName(), param.toTypename().ptrInSignal(enums))
     }
     return Triple(signalName, params, funSpec)
 }
