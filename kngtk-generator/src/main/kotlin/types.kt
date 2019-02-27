@@ -28,6 +28,8 @@ val Signal1 = ClassName(NS, "Signal1")
 val Signal2 = ClassName(NS, "Signal2")
 val Signal3 = ClassName(NS, "Signal3")
 val Signal4 = ClassName(NS, "Signal4")
+val Signal5 = ClassName(NS, "Signal5")
+val Signal6 = ClassName(NS, "Signal6")
 val Dsl = ClassName(NS, "GtkDsl")
 
 fun FileSpec.Builder.convertTypeTo(expr: String, type: TypeName) = when {

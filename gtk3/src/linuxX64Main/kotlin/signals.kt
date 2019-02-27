@@ -124,3 +124,49 @@ class Signal4<T : Any, T1, T2, T3, T4, F : CFunction<*>>(widgetPtr: CPointer<*>,
         }
     }
 }
+
+typealias SignalHandler5<T, T1, T2, T3, T4, T5> = T.(T1, T2, T3, T4, T5) -> Unit
+class Signal5<T : Any, T1, T2, T3, T4, T5, F : CFunction<*>>(widgetPtr: CPointer<*>, private val obj: T, name: String, realHandler: CPointer<F>) {
+    private var handlers = emptyList<SignalHandler5<T, T1, T2, T3, T4, T5>>()
+    init {
+        g_signal_connect(widgetPtr, name, realHandler, StableRef.create(obj).asCPointer())
+    }
+
+    operator fun invoke(handler: SignalHandler5<T, T1, T2, T3, T4, T5>) {
+        handlers += handler
+    }
+    operator fun minusAssign(handler: SignalHandler5<T, T1, T2, T3, T4, T5>) {
+        handlers -= handler
+    }
+
+    fun emit(p1: T1, p2: T2, p3: T3, p4: T4, p5: T5) {
+        for (handler in handlers) {
+            try {
+                obj.handler(p1, p2, p3, p4, p5)
+            } catch(e: Throwable) {}
+        }
+    }
+}
+
+typealias SignalHandler6<T, T1, T2, T3, T4, T5, T6> = T.(T1, T2, T3, T4, T5, T6) -> Unit
+class Signal6<T : Any, T1, T2, T3, T4, T5, T6, F : CFunction<*>>(widgetPtr: CPointer<*>, private val obj: T, name: String, realHandler: CPointer<F>) {
+    private var handlers = emptyList<SignalHandler6<T, T1, T2, T3, T4, T5, T6>>()
+    init {
+        g_signal_connect(widgetPtr, name, realHandler, StableRef.create(obj).asCPointer())
+    }
+
+    operator fun invoke(handler: SignalHandler6<T, T1, T2, T3, T4, T5, T6>) {
+        handlers += handler
+    }
+    operator fun minusAssign(handler: SignalHandler6<T, T1, T2, T3, T4, T5, T6>) {
+        handlers -= handler
+    }
+
+    fun emit(p1: T1, p2: T2, p3: T3, p4: T4, p5: T5, p6: T6) {
+        for (handler in handlers) {
+            try {
+                obj.handler(p1, p2, p3, p4, p5, p6)
+            } catch(e: Throwable) {}
+        }
+    }
+}

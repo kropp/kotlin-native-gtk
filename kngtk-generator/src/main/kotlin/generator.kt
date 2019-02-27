@@ -191,12 +191,13 @@ fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
                 addImport(CINTEROP, "staticCFunction")
                 addImport(CINTEROP, "asStableRef")
 
-                signals.forEach { signal ->
+                signals.filter { it.parameters.all { it.toTypename().isSupported() } }
+                    .forEach { signal ->
                     val (signalName, params, funSpec) = generateSignalHandler(signal, name, enums)
 
                     this@build.addFunction(funSpec
-                        .addParameter("data", COpaquePointer.asNullable())
-                        .addStatement("data?.asStableRef<$name>()?.get()?.$signalName?.emit(${params.joinToString { convertTypeFrom(it.toName().escaped(), it.toTypename(), false) }})")
+                        .addParameter("_data", COpaquePointer.asNullable())
+                        .addStatement("_data?.asStableRef<$name>()?.get()?.$signalName?.emit(${params.joinToString { convertTypeFrom(it.toName().escaped(), it.toTypename(), false) }})")
                         .build())
                 }
             }
@@ -276,6 +277,50 @@ private fun TypeSpec.Builder.generateSignalHandler(
     val wCPointed = WildcardTypeName.consumerOf(CPointed)
 
     val signalType = when (params.size) {
+        6 -> Signal6.parameterizedBy(
+            thisType,
+            params[0].toTypename().igtptr(enums),
+            params[1].toTypename().igtptr(enums),
+            params[2].toTypename().igtptr(enums),
+            params[3].toTypename().igtptr(enums),
+            params[4].toTypename().igtptr(enums),
+            params[5].toTypename().igtptr(enums),
+            CFunction.parameterizedBy(
+                LambdaTypeName.get(
+                    null,
+                    CPointer.parameterizedBy(wCPointed).asNullable(),
+                    params[0].toTypename().igtptr(enums),
+                    params[1].toTypename().igtptr(enums),
+                    params[2].toTypename().igtptr(enums),
+                    params[3].toTypename().igtptr(enums),
+                    params[4].toTypename().igtptr(enums),
+                    params[5].toTypename().igtptr(enums),
+                    COpaquePointer.asNullable(),
+                    returnType = UNIT
+                )
+            )
+        )
+        5 -> Signal5.parameterizedBy(
+            thisType,
+            params[0].toTypename().igtptr(enums),
+            params[1].toTypename().igtptr(enums),
+            params[2].toTypename().igtptr(enums),
+            params[3].toTypename().igtptr(enums),
+            params[4].toTypename().igtptr(enums),
+            CFunction.parameterizedBy(
+                LambdaTypeName.get(
+                    null,
+                    CPointer.parameterizedBy(wCPointed).asNullable(),
+                    params[0].toTypename().igtptr(enums),
+                    params[1].toTypename().igtptr(enums),
+                    params[2].toTypename().igtptr(enums),
+                    params[3].toTypename().igtptr(enums),
+                    params[4].toTypename().igtptr(enums),
+                    COpaquePointer.asNullable(),
+                    returnType = UNIT
+                )
+            )
+        )
         4 -> Signal4.parameterizedBy(
             thisType,
             params[0].toTypename().igtptr(enums),
@@ -340,7 +385,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 )
             )
         )
-        else -> Signal.parameterizedBy(
+        0 -> Signal.parameterizedBy(
             thisType,
             CFunction.parameterizedBy(
                 LambdaTypeName.get(
@@ -351,6 +396,7 @@ private fun TypeSpec.Builder.generateSignalHandler(
                 )
             )
         )
+        else -> error("Too many parameters in signal (${params.size})")
     }
 
     addProperty(
