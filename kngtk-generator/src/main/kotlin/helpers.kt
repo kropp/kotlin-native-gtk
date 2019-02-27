@@ -22,6 +22,7 @@ fun Element.shouldGenerateBindingClass(): Boolean {
     if (name == "HSV") return false
     if (name.startsWith("Popover")) return false // conflicting constructor
     if (name == "VolumeButton") return false // -> ScaleButton -> array
+    if (parent == "EventController") return false
     if (parent == "GObject.Object") return false
     if (parent == "NativeDialog") return false
     if (parent == "IMContext") return false
@@ -117,7 +118,7 @@ fun TypeName.isSupported(): Boolean {
     return true
 }
 
-val skipInOverload = listOf("GtkTextIter", "GtkTextMark", "GtkTextChildAnchor", "GtkRecentFilterInfo", "GtkFileFilterInfo", "GtkAccelGroup", "GtkTargetList", "GtkTreePath", "GtkCellRenderer", "GtkTreeModel", "GtkTreeIter", "GtkTooltip", "GtkAllocation", "GtkSelectionData", "GFile", "GIcon")
+val skipInOverload = listOf("GtkTextIter", "GtkTextMark", "GtkTextChildAnchor", "GtkRecentFilterInfo", "GtkFileFilterInfo", "GtkAccelGroup", "GtkTargetList", "GtkTreePath", "GtkCellRenderer", "GtkTreeModel", "GtkTreeIter", "GtkTooltip", "GtkAllocation", "GtkSelectionData", "GFile", "GIcon", "GMenuModel", "GActionGroup")
 fun TypeName.isWidgetPtr(enums: Map<String, TypeName>) = this is ClassName && packageName == LIB && !simpleName.startsWith("Gdk") && simpleName !in skipInOverload && this !in enums.values
 fun TypeName.igtptr(enums: Map<String, TypeName>) = if (this is ClassName && packageName == LIB && this !in enums.values) ptr else this
 
