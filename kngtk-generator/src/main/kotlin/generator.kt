@@ -232,25 +232,25 @@ fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
                         val typeName = rawTypeName.igtptr(enums)
                         if (prop.setter != null) {
                             addVarProperty(if (name == "Widget" && prop.name == "window") "gdkWindow" else prop.name.toInstanceName(), typeName) {
+                                prop.getter.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L\n\n", it) }
+                                prop.setter.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
                                 getter {
                                     val f = prop.getter.getAttribute("identifier", cNs).value
                                     addImport(LIB, f)
                                     addStatement("return " + convertTypeTo("$f(self)", typeName))
-                                    prop.getter.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
                                 }
                                 setter(typeName) {
                                     val f = prop.setter.getAttribute("identifier", cNs).value
                                     addImport(LIB, f)
                                     addStatement("$f(self, " + convertTypeFrom("value", typeName) + ")")
-                                    prop.setter.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
                                 }
                             }
                         } else {
+                            prop.getter.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
                             addProperty(prop.name.toInstanceName(), typeName) {
                                 val f = prop.getter.getAttribute("identifier", cNs).value
                                 addImport(LIB, f)
                                 addStatement("return " + convertTypeTo("$f(self)", typeName))
-                                prop.getter.getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
                             }
                         }
                     }

@@ -17,14 +17,14 @@ abstract class AboutDialog : Dialog() {
     private val self: CPointer<GtkAboutDialog>
         get() = widgetPtr!!.reinterpret()
 
+    /**
+     * Returns the string which are displayed in the authors tab
+     * of the secondary credits dialog.
+     *
+     * Sets the strings which are displayed in the authors tab
+     * of the secondary credits dialog. */
     var authors: List<String>
-        /**
-         * Returns the string which are displayed in the authors tab
-         * of the secondary credits dialog. */
         get() = gtk_about_dialog_get_authors(self).toList()
-        /**
-         * Sets the strings which are displayed in the authors tab
-         * of the secondary credits dialog. */
         set(value) {
             gtk_about_dialog_set_authors(self, memScoped { (value.map { it.cstr.ptr } +
                     listOf(null)).toCValues() })
