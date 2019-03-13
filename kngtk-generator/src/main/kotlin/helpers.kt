@@ -33,7 +33,8 @@ fun Element.shouldGenerateBindingClass(): Boolean {
 
 val Element.parameters get() = getChild("parameters", introspectionNs)?.getChildren("parameter", introspectionNs)?.filter { it.getChild("varargs", introspectionNs) == null } ?: emptyList()
 
-fun String.toInstanceName() = split('_', '-').joinToString("") { it.capitalize() }.let { it.first().toLowerCase() + it.substring(1) }
+fun String.toInstanceName() = split('_', '-').joinToString("") { it.capitalize() }.firstToLower()
+fun String.firstToLower() = first().toLowerCase() + substring(1)
 
 fun Element.toTypename(): TypeName {
     val arrayChild = getChild("array", introspectionNs)
@@ -53,6 +54,13 @@ fun Element.toTypename(): TypeName {
 val UINT = ClassName("kotlin", "UInt")
 val USHORT = ClassName("kotlin", "UShort")
 val ULONG = ClassName("kotlin", "ULong")
+
+val ExperimentalUnsignedTypes = ClassName("kotlin", "ExperimentalUnsignedTypes")
+val Suppress = ClassName("kotlin", "Suppress")
+
+val SuppressUnused = AnnotationSpec.builder(Suppress).addMember("%S", "unused").build()
+val SuppressFunctionName = AnnotationSpec.builder(Suppress).addMember("%S", "FunctionName").build()
+val SuppressUnusedParameter = AnnotationSpec.builder(Suppress).addMember("%S", "UNUSED_PARAMETER").build()
 
 fun String?.toTypeName(): TypeName {
     return when(this) {

@@ -14,8 +14,11 @@ fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
     val gtkClassPtr = ClassName(LIB, "Gtk$name").ptr
 
     val file = FileSpec.builder(NS, name).build {
+        addAnnotation(SuppressUnused)
+
         addType(name) {
             addAnnotation(Dsl)
+            addAnnotation(ExperimentalUnsignedTypes)
 
             getChild("doc", introspectionNs)?.text?.let { addKdoc("%L", it) }
 
@@ -56,6 +59,7 @@ fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
                         val ourWidget = name.toTypeName().asOurWidget(enums)
 
                         addModifiers(KModifier.INLINE)
+                        addAnnotation(ExperimentalUnsignedTypes)
                         receiver(Container)
                         returns(ourWidget)
 
@@ -65,7 +69,7 @@ fun Element.processClass(enums: Map<String, TypeName>): FileSpec? {
                         }
                         addParameter(ParameterSpec.builder("init", ourWidget.asBuilder()).defaultValue("{}").build())
 
-                        addStatement("return $name(${params.joinToString(", ")}).apply·{·init(); this@$instanceName.add(this) }")
+                        addStatement("return $name(${params.joinToString(", ")}).apply·{·init();·this@$instanceName.add(this)·}")
                     }
                 }
 
@@ -411,7 +415,9 @@ private fun TypeSpec.Builder.generateSignalHandler(
 
     val funSpec = FunSpec.builder(handler)
         .addModifiers(KModifier.PRIVATE)
-        .addParameter("sender", CPointer.parameterizedBy(wCPointed).asNullable())
+        .addParameter(ParameterSpec.builder("sender", CPointer.parameterizedBy(wCPointed).asNullable()).addAnnotation(SuppressUnusedParameter).build())
+        .addAnnotation(SuppressFunctionName)
+        .addAnnotation(ExperimentalUnsignedTypes)
 
     params.forEach { param ->
         funSpec.addParameter(param.toName(), param.toTypename().ptrInSignal(enums))

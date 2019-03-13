@@ -1,6 +1,10 @@
+@file:Suppress("unused")
+
 package gtk3
 
+import kotlin.ExperimentalUnsignedTypes
 import kotlin.String
+import kotlin.Suppress
 import kotlin.collections.List
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.cstr
@@ -13,6 +17,7 @@ import libgtk3.gtk_about_dialog_get_authors
 import libgtk3.gtk_about_dialog_set_authors
 
 @GtkDsl
+@ExperimentalUnsignedTypes
 abstract class AboutDialog : Dialog() {
     private val self: CPointer<GtkAboutDialog>
         get() = widgetPtr!!.reinterpret()
