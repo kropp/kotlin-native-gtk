@@ -7,7 +7,7 @@ import libgtk3.g_object_unref
 import libgtk3.gtk_application_new
 
 fun Application_onActivate_Handler(sender: CPointer<*>?, data: COpaquePointer?) {
-    data?.asStableRef<Application>()?.get()?.onActivate?.invoke()
+    data?.asStableRef<Application>()?.get()?.onActivate?.emit()
 }
 
 class Application(val id: String) {
