@@ -10,9 +10,9 @@ repositories {
 }
 
 kotlin {
-  linuxX64 {
-      compilations.getByName("main") {
-          val gtk3 by cinterops.creating {}
-      }
-  }
+    linuxX64 {
+        compilations.getByName("main") {
+            val gtk3 by cinterops.creating {}
+        }
+    }
 }
