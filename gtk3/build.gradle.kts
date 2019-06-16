@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform") version "1.3.31"
+    `maven-publish`
 }
 
 group = "com.github.kropp"
