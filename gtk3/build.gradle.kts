@@ -16,6 +16,12 @@ kotlin {
             val gtk3 by cinterops.creating {}
         }
     }
+
+    sourceSets {
+        val linuxX64Main by getting {
+            kotlin.srcDir("src/linuxX64Main/generatedKotlin")
+        }
+    }
 }
 
 tasks.withType<Wrapper> {
