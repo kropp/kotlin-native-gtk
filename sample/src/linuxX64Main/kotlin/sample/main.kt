@@ -22,7 +22,7 @@ import libgtk3.*
 fun main(args: Array<String>) {
     val application = Application("com.jetbrains.hackathon18.demo")
 
-    application.onActivate += {
+    application.onActivate {
 //        fileManager().showAll()
         mainWindow()
     }
@@ -48,7 +48,7 @@ private fun Application.mainWindow() {
                 popup = Menu().apply {
                     menuItem {
                         label = "Open"
-                        onActivate += {
+                        onActivate {
                             //                                FileChooserDialog("Open File", this@createWindow.window, GtkFileChooserAction.GTK_FILE_CHOOSER_ACTION_OPEN, "Open!").show()
                         }
                     }
@@ -62,11 +62,11 @@ private fun Application.mainWindow() {
                         label = "False"
                     }
                     showAll()
-                }.menu
+                }.menu!!
             }
 
             stackSwitcher = stackSwitcher()
-        }.widgetPtr
+        }.widgetPtr!!
 
         var pentry: Entry? = null
         vbox {
@@ -74,14 +74,14 @@ private fun Application.mainWindow() {
                 hbbox {
                     button {
                         label = "Quit"
-                        onClicked += {
+                        onClicked {
                             println("Quit Kotlin GTK!")
                             this@createWindow.destroy()
                         }
                     }
                     button {
                         label = "File Manager"
-                        onClicked += {
+                        onClicked {
                             fileManager().showAll()
                         }
                     }
@@ -111,7 +111,7 @@ private fun Application.mainWindow() {
 
                 vbox {
                     spinner { start() }
-                    spinButton(adjustment.widgetPtr, 0.1, 1)
+                    spinButton(adjustment.widgetPtr, 0.1, 1U)
                 }
             }
 
@@ -125,7 +125,7 @@ private fun Application.mainWindow() {
             }
 
             stack {
-                stackSwitcher?.stack = stack
+                stackSwitcher?.stack = stack!!
 
                 val cb = ButtonBox(GtkOrientation.GTK_ORIENTATION_VERTICAL).apply {
                     checkButton { label = "Checkbox 1" }
@@ -150,7 +150,7 @@ private fun Application.mainWindow() {
             actionBar {
                 imageButton("gtk-ok")
                 imageButton("gtk-about") {
-                    onClicked += {
+                    onClicked {
                         AboutDialog().apply {
                             iconName = "gtk-about"
                             authors = listOf("Victor Kropp", "John Doe")
@@ -160,13 +160,13 @@ private fun Application.mainWindow() {
 
                 centerWidget = linkButton("https://jetbrains.com/") {
                     label = "jetbrains.com"
-                }.widgetPtr
+                }.widgetPtr!!
 
                 val progress = progressBar {
                     fraction = .56
                     text = "Demo in progress"
                 }
-                adjustment.onValueChanged += {
+                adjustment.onValueChanged {
                     val fraction = adjustment.value / adjustment.upper
                     progress.fraction = fraction
                     pentry?.progressFraction = fraction

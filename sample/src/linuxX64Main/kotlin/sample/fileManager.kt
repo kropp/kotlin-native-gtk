@@ -69,28 +69,31 @@ fun Application.fileManager() = createWindow {
         showCloseButton = true
 
         backButton = imageButton("gtk-go-back") {
-            onClicked += { navigateBack() }
+            onClicked { navigateBack() }
         }
         fwdButton = imageButton("gtk-go-forward") {
-            onClicked += { navigateForward() }
+            onClicked { navigateForward() }
         }
     }
 
     hbox {
         placesSidebar {
             maxContentWidth = 200
+            /*
+            TODO
             onOpenLocation += { file: CPointer<GFile>?, _ ->
                 libgtk3.g_file_get_path(file)?.toKString()?.let { navigate(it) }
             }
+            */
         }
         scrolledWindow(null, null) {
             minContentWidth = 600
             iconView {
-                model = iconViewModel.store?.reinterpret()
+                model = iconViewModel.store?.reinterpret()!!
                 textColumn = 0
                 pixbufColumn = 1
 
-                onItemActivated += {
+                onItemActivated {
                     val name = iconViewModel.getByPath(it)
                     val path = "${paths[current]}/$name"
                     if (isDirectory(path)) {

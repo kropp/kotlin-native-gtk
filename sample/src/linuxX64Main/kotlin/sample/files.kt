@@ -2,9 +2,8 @@ package sample
 
 import kotlinx.cinterop.*
 import platform.posix.*
-import kotlin.coroutines.experimental.buildSequence
 
-fun files(directory: String) = buildSequence {
+fun files(directory: String) = sequence {
     val dir = opendir(directory)
     while (true) {
         val entry = readdir(dir) ?: break
@@ -18,6 +17,7 @@ fun files(directory: String) = buildSequence {
 fun isDirectory(filename: String) = memScoped {
     val s = alloc<stat>()
     if (stat(filename, s.ptr) == 0) {
-        s.st_mode and S_IFMT == S_IFDIR
+        @Suppress("EXPERIMENTAL_API_USAGE")
+        s.st_mode and S_IFMT.toUInt() == S_IFDIR.toUInt()
     } else false
 }
