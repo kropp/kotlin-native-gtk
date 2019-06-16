@@ -16,12 +16,16 @@ import libgtk3.gtk_radio_button_join_group
 import libgtk3.gtk_radio_button_new
 import libgtk3.gtk_radio_button_set_group
 
-inline fun Container.radioButton(group: CPointer<GSList>, init: RadioButton.() -> Unit = {}):
+inline fun Container.radioButton(group: CPointer<GSList>?, init: RadioButton.() -> Unit = {}):
         RadioButton = RadioButton(group).apply { init(); this@radioButton.add(this) }
 
 private fun RadioButton_onGroupChanged_Handler(sender: CPointer<in CPointed>?, _data:
         COpaquePointer?) {
     _data?.asStableRef<RadioButton>()?.get()?.onGroupChanged?.emit()
+}
+
+private fun CPointer<GSList>?.gtk_radio_button_new(): CPointer<GtkWidget>? {
+    return gtk_radio_button_new(this?.reinterpret())?.reinterpret()
 }
 
 /**
@@ -111,7 +115,7 @@ private fun RadioButton_onGroupChanged_Handler(sender: CPointer<in CPointed>?, _
  * can be used to determine if the button has been selected or deselected.
  */
 @GtkDsl
-open class RadioButton internal constructor(override val widgetPtr: CPointer<GtkWidget>? = null) :
+open class RadioButton internal constructor(override val widgetPtr: CPointer<GtkWidget>?) :
         CheckButton() {
     private val self: CPointer<GtkRadioButton>?
         get() = widgetPtr!!.reinterpret()
@@ -140,8 +144,8 @@ open class RadioButton internal constructor(override val widgetPtr: CPointer<Gtk
     /**
      * Creates a new #GtkRadioButton. To be of any practical value, a widget should
      * then be packed into the radio button. */
-    constructor(group: CPointer<GSList>) :
-            this(gtk_radio_button_new(group?.reinterpret())?.reinterpret())
+    constructor(group: CPointer<GSList>?) :
+            this(group.gtk_radio_button_new())
 
     /**
      * Joins a #GtkRadioButton object to the group of another #GtkRadioButton object
