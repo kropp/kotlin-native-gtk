@@ -48,8 +48,8 @@ import libgtk3.gtk_scrolled_window_unset_placement
 import libgtk3.gtk_true
 
 inline fun Container.scrolledWindow(
-    hadjustment: CPointer<GtkAdjustment>,
-    vadjustment: CPointer<GtkAdjustment>,
+    hadjustment: CPointer<GtkAdjustment>?,
+    vadjustment: CPointer<GtkAdjustment>?,
     init: ScrolledWindow.() -> Unit = {}
 ): ScrolledWindow = ScrolledWindow(hadjustment, vadjustment).apply { init();
         this@scrolledWindow.add(this) }
@@ -341,7 +341,7 @@ open class ScrolledWindow internal constructor(override val widgetPtr: CPointer<
      * shared with the scrollbars and the child widget to keep the bars in sync
      * with the child. Usually you want to pass %NULL for the adjustments, which
      * will cause the scrolled window to create them for you. */
-    constructor(hadjustment: CPointer<GtkAdjustment>, vadjustment: CPointer<GtkAdjustment>) :
+    constructor(hadjustment: CPointer<GtkAdjustment>?, vadjustment: CPointer<GtkAdjustment>?) :
             this(gtk_scrolled_window_new(hadjustment?.reinterpret(),
             vadjustment?.reinterpret())?.reinterpret())
 
