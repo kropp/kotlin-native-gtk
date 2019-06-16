@@ -1,3 +1,5 @@
+package sample
+
 import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.coroutines.experimental.buildSequence

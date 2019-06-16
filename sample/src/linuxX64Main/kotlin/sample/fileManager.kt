@@ -1,3 +1,5 @@
+package sample
+
 import gtk3.*
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.reinterpret
