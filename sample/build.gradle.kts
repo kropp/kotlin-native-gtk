@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.3.31"
+    kotlin("multiplatform") version "1.3.41"
 }
 
 group = "com.github.kropp"
