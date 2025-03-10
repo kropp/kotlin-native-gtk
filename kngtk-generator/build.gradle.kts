@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.21"
+    kotlin("jvm") version "1.3.41"
 }
 
 group = "kngtk-generator"
